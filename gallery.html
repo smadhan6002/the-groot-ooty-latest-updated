@@ -1,11 +1,43 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Photo Gallery | The Groot Ooty</title>
-  <meta name="description" content="View authentic photography of The Groot Ooty — A-frame cabins, Glass house, campfire nights, gardens, home-cooked food, and mountain landscapes." />
-  <link rel="icon" href="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" type="image/jpeg" />
+  <title>Photo Gallery | The Groot Ooty — A-Frame, Glass House &amp; Ooty Property</title>
+  <meta name="description" content="Browse authentic photos of The Groot Ooty — A-Frame cabins, Glass House, campfire nights, home-cooked meals, lush Nilgiri gardens, and mountain landscapes in Pudumund, Ooty." />
+  <link rel="canonical" href="https://the-grooty.vercel.app/gallery" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="The Groot Ooty" />
+  <meta property="og:title" content="Photo Gallery | The Groot Ooty — A-Frame, Glass House &amp; Ooty Property" />
+  <meta property="og:description" content="Authentic photography of The Groot Ooty — A-Frame cabin, Glass House, campfire evenings, home food, and Nilgiri mountain landscapes in Pudumund." />
+  <meta property="og:url" content="https://the-grooty.vercel.app/gallery" />
+  <meta property="og:image" content="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/1000032835_professional_4k.webp" />
+  <meta property="og:image:alt" content="The Groot Ooty property gardens and mountain landscape, Pudumund" />
+  <meta property="og:locale" content="en_IN" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Photo Gallery | The Groot Ooty" />
+  <meta name="twitter:description" content="Authentic photos of The Groot Ooty in Pudumund, Ooty — A-Frame cabin, Glass House, campfire nights and Nilgiri landscapes." />
+  <meta name="twitter:image" content="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/1000032835_professional_4k.webp" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" type="image/webp" />
+
+  <!-- JSON-LD Breadcrumb -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://the-grooty.vercel.app/" },
+      { "@type": "ListItem", "position": 2, "name": "Photo Gallery", "item": "https://the-grooty.vercel.app/gallery" }
+    ]
+  }
+  </script>
+
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -134,7 +166,7 @@
           <nav class="footer-nav">
             <a href="booking.html" class="footer-link">Check Availability</a>
             <a href="contact.html" class="footer-link">Contact Us</a>
-            <a href="admin.html" class="footer-link" style="opacity:0.75;">Admin Portal</a>
+            <a href="admin.html" class="footer-link" rel="nofollow" style="opacity:0.75;">Admin Portal</a>
           </nav>
         </div>
         <div>
@@ -151,7 +183,7 @@
         <div class="footer-bottom-links">
           <a href="contact.html" class="footer-bottom-link">Contact</a>
           <a href="booking.html" class="footer-bottom-link">Book Direct</a>
-          <a href="admin.html" class="footer-bottom-link" style="opacity:0.7;">Admin</a>
+          <a href="admin.html" class="footer-bottom-link" rel="nofollow" style="opacity:0.7;">Admin</a>
         </div>
       </div>
     </div>
@@ -164,3 +196,4 @@
   <script src="js/main.js"></script>
 </body>
 </html>
+

@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Public pages — allow all crawlers
+Allow: /index.html
+Allow: /rooms.html
+Allow: /room-detail.html
+Allow: /experiences.html
+Allow: /gallery.html
+Allow: /ooty.html
+Allow: /reviews.html
+Allow: /contact.html
+Allow: /booking.html
+Allow: /css/
+Allow: /js/
+Allow: /assets/
+
+# Admin area — block all crawlers
+Disallow: /admin/
+Disallow: /admin
+
+# Sitemap location
+Sitemap: https://the-grooty.vercel.app/sitemap.xml

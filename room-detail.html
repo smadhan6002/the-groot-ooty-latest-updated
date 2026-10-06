@@ -1,11 +1,44 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Room Details | The Groot Ooty</title>
-  <meta name="description" content="Discover detailed room features, authentic photography, and direct booking options at The Groot Ooty." />
-  <link rel="icon" href="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" type="image/jpeg" />
+  <title>A-Frame Cabin | Room Details | The Groot Ooty</title>
+  <meta name="description" content="Explore room details, photos, and amenities for stays at The Groot Ooty, Pudumund, Ooty — A-Frame Cabin, Glass House, Luxurious Suite, and Standard Room. Book direct." />
+  <link rel="canonical" href="https://the-grooty.vercel.app/room-detail" id="page-canonical" />
+
+  <!-- Open Graph (updated dynamically by JS) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="The Groot Ooty" />
+  <meta property="og:title" content="Room Details | The Groot Ooty" id="og-title" />
+  <meta property="og:description" content="Explore room details and book your stay at The Groot Ooty in Pudumund, Ooty." id="og-description" />
+  <meta property="og:url" content="https://the-grooty.vercel.app/room-detail" id="og-url" />
+  <meta property="og:image" content="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" />
+  <meta property="og:locale" content="en_IN" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Room Details | The Groot Ooty" />
+  <meta name="twitter:description" content="Explore room details and book your stay at The Groot Ooty in Pudumund, Ooty." />
+  <meta name="twitter:image" content="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" type="image/webp" />
+
+  <!-- JSON-LD Breadcrumb (updated dynamically) -->
+  <script type="application/ld+json" id="breadcrumb-ld">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://the-grooty.vercel.app/" },
+      { "@type": "ListItem", "position": 2, "name": "Rooms & Stays", "item": "https://the-grooty.vercel.app/rooms" },
+      { "@type": "ListItem", "position": 3, "name": "Room Details", "item": "https://the-grooty.vercel.app/room-detail" }
+    ]
+  }
+  </script>
+
+
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -292,7 +325,7 @@
           <nav class="footer-nav">
             <a href="booking.html" class="footer-link">Check Availability</a>
             <a href="contact.html" class="footer-link">Contact Us</a>
-            <a href="admin.html" class="footer-link" style="opacity:0.75;">Admin Portal</a>
+            <a href="admin.html" class="footer-link" rel="nofollow" style="opacity:0.75;">Admin Portal</a>
           </nav>
         </div>
         <div>
@@ -309,7 +342,7 @@
         <div class="footer-bottom-links">
           <a href="contact.html" class="footer-bottom-link">Contact</a>
           <a href="booking.html" class="footer-bottom-link">Book Direct</a>
-          <a href="admin.html" class="footer-bottom-link" style="opacity:0.7;">Admin</a>
+          <a href="admin.html" class="footer-bottom-link" rel="nofollow" style="opacity:0.7;">Admin</a>
         </div>
       </div>
     </div>
@@ -325,9 +358,60 @@
     const roomId = params.get('room') || 'aframe';
     const room = (window.GrootStore ? window.GrootStore.getRoom(roomId) : null) || ROOMS.find(r => r.id === roomId) || ROOMS[0];
 
-    document.title = `${room.name} | The Groot Ooty`;
+    // SEO: room-specific title, description, canonical, OG
+    const roomSeoMap = {
+      aframe: {
+        title: 'A-Frame Cabin Ooty | Signature Timber Cabin | The Groot Ooty',
+        desc: 'Stay in The Groot Ooty\'s iconic A-Frame cabin — a distinctive triangular timber cabin with exposed beams, forest views, and warm mountain ambiance. Book your Ooty A-Frame stay direct.',
+        label: 'A-Frame Cabin'
+      },
+      glasshouse: {
+        title: 'Glass House Stay Ooty | Forest Panorama Room | The Groot Ooty',
+        desc: 'Experience The Groot Ooty\'s Glass House — sleep surrounded by living forest canopy with panoramic glass walls bringing nature to your bedside. Unique Glass House stay in Ooty.',
+        label: 'Glass House'
+      },
+      suite: {
+        title: 'Luxurious Suite Ooty | Premium Mountain Room | The Groot Ooty',
+        desc: 'The Groot Ooty\'s Luxurious Suite offers elevated teak furnishings, a plush king bed, private lounge, and hill panoramas. Premium comfort in the Nilgiri hills, Pudumund.',
+        label: 'Luxurious Suite'
+      },
+      standard: {
+        title: 'Standard Room Ooty | Cozy Nilgiri Stay | The Groot Ooty',
+        desc: 'The Groot Ooty\'s Standard Room — a warm, well-appointed room with garden views, hot water, and Wi-Fi. Peaceful and affordable stay in Pudumund, Ooty.',
+        label: 'Standard Room'
+      }
+    };
+    const seo = roomSeoMap[roomId] || roomSeoMap.aframe;
+    const canonicalUrl = `https://the-grooty.vercel.app/room-detail?room=${roomId}`;
+
+    document.title = seo.title;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', seo.desc);
+    const canonical = document.getElementById('page-canonical');
+    if (canonical) canonical.setAttribute('href', canonicalUrl);
+    const ogTitle = document.getElementById('og-title');
+    if (ogTitle) ogTitle.setAttribute('content', seo.title);
+    const ogDesc = document.getElementById('og-description');
+    if (ogDesc) ogDesc.setAttribute('content', seo.desc);
+    const ogUrl = document.getElementById('og-url');
+    if (ogUrl) ogUrl.setAttribute('content', canonicalUrl);
+
+    // Update breadcrumb JSON-LD
+    const breadcrumbLd = document.getElementById('breadcrumb-ld');
+    if (breadcrumbLd) {
+      breadcrumbLd.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://the-grooty.vercel.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Rooms & Stays", "item": "https://the-grooty.vercel.app/rooms" },
+          { "@type": "ListItem", "position": 3, "name": seo.label + " | The Groot Ooty", "item": canonicalUrl }
+        ]
+      });
+    }
+
     document.getElementById('room-hero-img').src = room.image;
-    document.getElementById('room-hero-img').alt = room.name;
+    document.getElementById('room-hero-img').alt = `${room.name} at The Groot Ooty, Pudumund, Ooty — interior and exterior view`;
     document.getElementById('room-detail-name').textContent = room.name;
     document.getElementById('room-detail-tagline').textContent = room.tagline;
     document.getElementById('room-detail-tag').textContent = room.name === 'A-frame' ? 'Signature Cabin' : room.name === 'Glass house' ? 'Forest Panorama' : room.name === 'Luxurious suit' ? 'Spacious Suite' : 'Cozy Comfort';
@@ -345,7 +429,7 @@
     photos.forEach((src, idx) => {
       const thumb = document.createElement('img');
       thumb.src = src;
-      thumb.alt = `${room.name} photo ${idx + 1}`;
+      thumb.alt = `${room.name} at The Groot Ooty — photo ${idx + 1}`;
       thumb.className = `room-gallery-thumb ${idx === 0 ? 'active' : ''}`;
       thumb.addEventListener('click', () => {
         document.getElementById('room-hero-img').src = src;
@@ -381,5 +465,7 @@
     document.getElementById('card-wa-btn').onclick = () => window.open(waUrl, '_blank');
   });
   </script>
+
 </body>
 </html>
+
