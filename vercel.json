@@ -1,9 +1,37 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "the-grooty.vercel.app"
+        }
+      ],
+      "destination": "https://www.thegrootooty.online/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "thegrootooty.online"
+        }
+      ],
+      "destination": "https://www.thegrootooty.online/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/admin",
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/admin.html",
       "destination": "/admin/index.html"
     },
     {

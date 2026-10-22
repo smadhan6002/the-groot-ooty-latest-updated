@@ -180,14 +180,14 @@
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:1.2rem;">☁️</span>
             <div>
-              <strong style="color:var(--admin-accent-glow);">Supabase Cloud Sync Ready</strong>
-              <div style="font-size:0.8rem; color:var(--admin-text-muted);">
-                Notes are backed up locally. To sync across all devices, run the provided SQL in your Supabase SQL Editor.
+              <strong style="color:var(--admin-accent-glow);">Supabase Synchronization Notice</strong>
+              <div id="notes-sync-status-msg" style="font-size:0.8rem; color:var(--admin-text-muted);">
+                Supabase table <code>public.booking_notes</code> with admin RLS enabled.
               </div>
             </div>
           </div>
           <button type="button" onclick="openSqlModal()" class="admin-btn admin-btn-outline" style="font-size:0.75rem; padding:5px 12px;">
-            View SQL Script
+            View SQL & RLS Script
           </button>
         </div>
 
@@ -209,6 +209,10 @@
 
           <form id="admin-booking-note-form" onsubmit="handleSaveBookingNote(event)">
             <input type="hidden" id="note-id" />
+
+            <!-- Dynamic Save Feedback & Error Alerts -->
+            <div id="note-form-error" style="display:none; color:#F87171; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px 14px; margin-bottom:1.25rem; font-size:0.85rem; line-height:1.45;"></div>
+            <div id="note-form-success" style="display:none; color:#4ADE80; background:rgba(37,211,102,0.12); border:1px solid rgba(37,211,102,0.3); border-radius:8px; padding:12px 14px; margin-bottom:1.25rem; font-size:0.85rem; line-height:1.45;"></div>
 
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1.25rem;">
               

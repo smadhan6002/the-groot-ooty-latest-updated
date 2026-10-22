@@ -113,8 +113,34 @@ async function handleAdminLogin(e) {
   btn.innerHTML = "Authenticating...";
   btn.disabled = true;
 
-  // 1. Direct Administrative Passcode Check (Local / Offline Admin Access)
+  const authEmail = (email.toLowerCase() === 'admin') ? 'admin@thegrootooty.com' : email;
   const isDirectMatch = (email.toLowerCase() === 'admin' || email.toLowerCase() === 'admin@thegrootooty.com') && passcode === 'groot2026';
+
+  let supabaseAuthSuccess = false;
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email: authEmail, password: passcode });
+    if (!error && data && data.user) {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
+      if (profile && profile.role && String(profile.role).trim().toLowerCase() === 'admin') {
+        supabaseAuthSuccess = true;
+      }
+    }
+  } catch (err) {
+    console.warn('Supabase Auth signIn attempt notice:', err);
+  }
+
+  if (supabaseAuthSuccess) {
+    sessionStorage.setItem('groot_admin_auth_v1', 'authenticated');
+    if (errorEl) errorEl.style.display = 'none';
+    btn.innerHTML = originalBtnText;
+    btn.disabled = false;
+    showToast('Admin access granted (Supabase session active).');
+    initAdminAuth();
+    initAdminTabs();
+    return;
+  }
+
+  // Fallback: Direct Administrative Passcode Check (Local / Direct Admin Access)
   if (isDirectMatch) {
     sessionStorage.setItem('groot_admin_auth_v1', 'authenticated');
     if (errorEl) errorEl.style.display = 'none';
@@ -126,51 +152,12 @@ async function handleAdminLogin(e) {
     return;
   }
 
-  // 2. Supabase Auth Check
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password: passcode });
-
-  if (error) {
-    if (errorEl) {
-      errorEl.innerText = error.message;
-      errorEl.style.display = 'block';
-    }
-    btn.innerHTML = originalBtnText;
-    btn.disabled = false;
-    return;
+  if (errorEl) {
+    errorEl.innerText = "Invalid credentials. Please enter the correct admin email/passcode.";
+    errorEl.style.display = 'block';
   }
-
-  const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
-
-  let isAuthorized = false;
-  if (!profileError && profile && profile.role && String(profile.role).trim().toLowerCase() === 'admin') {
-    isAuthorized = true;
-  }
-
-  if (!isAuthorized) {
-    await supabase.auth.signOut();
-    if (errorEl) {
-      if (profileError) {
-        console.error("Profile check error:", profileError);
-        errorEl.innerText = "Authorization failed: Could not read profile. Please ensure RLS policies allow SELECT for authenticated users on public.profiles.";
-      } else if (!profile) {
-        errorEl.innerText = "Authorization failed: Profile record not found for this user in public.profiles.";
-      } else {
-        errorEl.innerText = `Authorization failed: Your role is '${profile.role}', but 'admin' is required.`;
-      }
-      errorEl.style.display = 'block';
-    }
-    btn.innerHTML = originalBtnText;
-    btn.disabled = false;
-    return;
-  }
-
-  if (errorEl) errorEl.style.display = 'none';
   btn.innerHTML = originalBtnText;
   btn.disabled = false;
-  
-  showToast('Admin access granted.');
-  initAdminAuth();
-  initAdminTabs();
 }
 
 async function handleAdminLogout() {
@@ -535,40 +522,6 @@ function showToast(msg) {
 
 const STORAGE_KEY_ADMIN_NOTES = 'groot_admin_booking_notes_v1';
 let bookingNotesState = [];
-let hasCloudNotesTable = null;
-
-const SAMPLE_NOTES = [
-  {
-    id: 'sample_note_1',
-    customer_name: 'Anand Kumar',
-    contact_number: '+91 98401 23456',
-    room_name: 'A-frame',
-    check_in: '2026-10-24',
-    check_out: '2026-10-26',
-    guests: 2,
-    advance_amount: 3000,
-    total_amount: 9000,
-    status: 'Confirmed',
-    notes: 'Campfire setup requested. Arriving around 5 PM.',
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-    updated_at: new Date(Date.now() - 86400000 * 2).toISOString()
-  },
-  {
-    id: 'sample_note_2',
-    customer_name: 'Priya Sharma',
-    contact_number: '+91 97890 65432',
-    room_name: 'Glass House',
-    check_in: '2026-10-22',
-    check_out: '2026-10-24',
-    guests: 2,
-    advance_amount: 5000,
-    total_amount: 10000,
-    status: 'Checked In',
-    notes: 'Anniversary couple. Honeymoon decor arranged. 50% advance paid via UPI.',
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString()
-  }
-];
 
 function setDefaultDates() {
   const checkinInput = document.getElementById('note-checkin');
@@ -592,41 +545,43 @@ function setDefaultDates() {
 }
 
 const SQL_MIGRATION_SCRIPT = `-- ==============================================================================
--- THE GROOT OOTY — Admin Manual Booking Notes Table & RLS Setup
+-- THE GROOT OOTY — Admin Manual Booking Notes Permissions & RLS Setup
 -- Run this in your Supabase Dashboard -> SQL Editor (https://supabase.com/dashboard)
 -- ==============================================================================
 
--- 1. Create the table
-CREATE TABLE IF NOT EXISTS public.admin_booking_notes (
+-- 1. Ensure table structure exists with exact required schema
+CREATE TABLE IF NOT EXISTS public.booking_notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_name TEXT NOT NULL,
     contact_number TEXT NOT NULL,
     room_name TEXT NOT NULL,
     check_in DATE NOT NULL,
     check_out DATE NOT NULL,
-    guests INTEGER NOT NULL DEFAULT 1,
+    number_of_guests INTEGER NOT NULL DEFAULT 1,
     advance_amount NUMERIC(10, 2) DEFAULT 0,
-    total_amount NUMERIC(10, 2) DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'Confirmed',
-    notes TEXT DEFAULT '',
-    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL DEFAULT auth.uid(),
+    total_booking_amount NUMERIC(10, 2) DEFAULT 0,
+    booking_status TEXT NOT NULL DEFAULT 'Confirmed',
+    additional_notes TEXT DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- 2. Indexes for fast sorting and filtering
-CREATE INDEX IF NOT EXISTS idx_admin_booking_notes_checkin ON public.admin_booking_notes(check_in);
-CREATE INDEX IF NOT EXISTS idx_admin_booking_notes_status ON public.admin_booking_notes(status);
-CREATE INDEX IF NOT EXISTS idx_admin_booking_notes_created_at ON public.admin_booking_notes(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_booking_notes_checkin ON public.booking_notes(check_in);
+CREATE INDEX IF NOT EXISTS idx_booking_notes_status ON public.booking_notes(booking_status);
+CREATE INDEX IF NOT EXISTS idx_booking_notes_created_at ON public.booking_notes(created_at DESC);
 
--- 3. Enable Row Level Security (RLS)
-ALTER TABLE public.admin_booking_notes ENABLE ROW LEVEL SECURITY;
+-- 3. Grant table privileges to authenticated users
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.booking_notes TO authenticated;
 
--- 4. RLS Policy: Only authenticated users with role = 'admin' in profiles table have access
-DROP POLICY IF EXISTS "Admins can view and manage booking notes" ON public.admin_booking_notes;
+-- 4. Enable Row Level Security (RLS)
+ALTER TABLE public.booking_notes ENABLE ROW LEVEL SECURITY;
+
+-- 5. Verified Admin-Only Policy: Only authenticated users with role = 'admin' in profiles table have access
+DROP POLICY IF EXISTS "Admins can view and manage booking notes" ON public.booking_notes;
 
 CREATE POLICY "Admins can view and manage booking notes"
-ON public.admin_booking_notes
+ON public.booking_notes
 FOR ALL
 TO authenticated
 USING (
@@ -649,50 +604,42 @@ async function loadBookingNotes() {
 
   try {
     const { data, error } = await supabase
-      .from('admin_booking_notes')
+      .from('booking_notes')
       .select('*')
       .order('check_in', { ascending: false });
 
-    if (!error && Array.isArray(data)) {
-      hasCloudNotesTable = true;
-      bookingNotesState = data;
-      try {
-        localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(data));
-      } catch (e) {}
-      if (syncBanner) syncBanner.style.display = 'none';
-    } else {
-      hasCloudNotesTable = false;
+    if (error) {
+      console.error('[Supabase loadBookingNotes Error]', error);
+      if (syncBanner) {
+        syncBanner.style.display = 'flex';
+        const msgEl = document.getElementById('notes-sync-status-msg');
+        if (msgEl) {
+          msgEl.innerHTML = `Supabase query notification (${escapeHtml(error.code || 'RLS')}): ${escapeHtml(error.message)}. If RLS is enabled, please verify admin authorization policies in Supabase.`;
+        }
+      }
+      // Offline fallback: load cached notes if available
       const cached = localStorage.getItem(STORAGE_KEY_ADMIN_NOTES);
       if (cached !== null) {
         try {
           bookingNotesState = JSON.parse(cached);
         } catch (e) {
-          bookingNotesState = [...SAMPLE_NOTES];
+          bookingNotesState = [];
         }
       } else {
-        bookingNotesState = [...SAMPLE_NOTES];
-        try {
-          localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(bookingNotesState));
-        } catch (e) {}
-      }
-      if (syncBanner) syncBanner.style.display = 'flex';
-    }
-  } catch (err) {
-    hasCloudNotesTable = false;
-    const cached = localStorage.getItem(STORAGE_KEY_ADMIN_NOTES);
-    if (cached !== null) {
-      try {
-        bookingNotesState = JSON.parse(cached);
-      } catch (e) {
-        bookingNotesState = [...SAMPLE_NOTES];
+        bookingNotesState = [];
       }
     } else {
-      bookingNotesState = [...SAMPLE_NOTES];
+      if (syncBanner) syncBanner.style.display = 'none';
+      bookingNotesState = Array.isArray(data) ? data : [];
       try {
         localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(bookingNotesState));
       } catch (e) {}
     }
+  } catch (err) {
+    console.error('[loadBookingNotes Exception]', err);
     if (syncBanner) syncBanner.style.display = 'flex';
+    const cached = localStorage.getItem(STORAGE_KEY_ADMIN_NOTES);
+    bookingNotesState = cached ? JSON.parse(cached) : [];
   }
 
   filterBookingNotes();
@@ -724,89 +671,157 @@ async function handleSaveBookingNote(e) {
   const statusInput = document.getElementById('note-status');
   const notesInput = document.getElementById('note-notes');
   const submitBtn = document.getElementById('note-submit-btn');
+  const errorEl = document.getElementById('note-form-error');
+  const successEl = document.getElementById('note-form-success');
 
+  const hideFormAlerts = () => {
+    if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+    if (successEl) { successEl.style.display = 'none'; successEl.textContent = ''; }
+  };
+  const showFormError = (msg) => {
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+      errorEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  };
+
+  hideFormAlerts();
+
+  const customerName = nameInput.value.trim();
+  const contactNumber = contactInput.value.trim();
+  const roomName = roomInput.value;
   const checkinVal = checkinInput.value;
   const checkoutVal = checkoutInput.value;
 
-  // Validation: Check-out cannot be earlier than check-in
+  if (!customerName) {
+    showFormError('Customer Name is required.');
+    nameInput.focus();
+    return;
+  }
+  if (!contactNumber) {
+    showFormError('Contact Number is required.');
+    contactInput.focus();
+    return;
+  }
+  if (!roomName) {
+    showFormError('Please select a Room.');
+    roomInput.focus();
+    return;
+  }
+  if (!checkinVal) {
+    showFormError('Check-in Date is required.');
+    checkinInput.focus();
+    return;
+  }
+  if (!checkoutVal) {
+    showFormError('Check-out Date is required.');
+    checkoutInput.focus();
+    return;
+  }
   if (new Date(checkoutVal) < new Date(checkinVal)) {
-    alert('Check-out date cannot be earlier than check-in date.');
+    showFormError('Check-out date cannot be earlier than check-in date.');
     checkoutInput.focus();
     return;
   }
 
-  const isEditing = Boolean(idInput.value);
-  const noteId = idInput.value || (crypto.randomUUID ? crypto.randomUUID() : 'note_' + Date.now());
+  const isEditing = Boolean(idInput.value && idInput.value.trim());
+  const noteId = idInput.value ? idInput.value.trim() : null;
 
-  const noteData = {
-    customer_name: nameInput.value.trim(),
-    contact_number: contactInput.value.trim(),
-    room_name: roomInput.value,
+  // Convert numeric inputs to valid numbers safely
+  const guestsVal = parseInt(guestsInput.value, 10);
+  const validGuests = (!isNaN(guestsVal) && guestsVal >= 1) ? guestsVal : 1;
+
+  const rawAdvance = advanceInput.value ? advanceInput.value.trim() : '';
+  const parsedAdvance = rawAdvance !== '' ? parseFloat(rawAdvance) : 0;
+  const validAdvance = (!isNaN(parsedAdvance) && parsedAdvance >= 0) ? parsedAdvance : 0;
+
+  const rawTotal = totalInput.value ? totalInput.value.trim() : '';
+  const parsedTotal = rawTotal !== '' ? parseFloat(rawTotal) : 0;
+  const validTotal = (!isNaN(parsedTotal) && parsedTotal >= 0) ? parsedTotal : 0;
+
+  const statusVal = statusInput.value || 'Confirmed';
+  const notesVal = notesInput.value ? notesInput.value.trim() : '';
+
+  // Exact column mapping for public.booking_notes
+  const payload = {
+    customer_name: customerName,
+    contact_number: contactNumber,
+    room_name: roomName,
     check_in: checkinVal,
     check_out: checkoutVal,
-    guests: parseInt(guestsInput.value, 10) || 1,
-    advance_amount: advanceInput.value ? parseFloat(advanceInput.value) : 0,
-    total_amount: totalInput.value ? parseFloat(totalInput.value) : 0,
-    status: statusInput.value,
-    notes: notesInput.value ? notesInput.value.trim() : '',
+    number_of_guests: validGuests,
+    advance_amount: validAdvance,
+    total_booking_amount: validTotal,
+    booking_status: statusVal,
+    additional_notes: notesVal,
     updated_at: new Date().toISOString()
   };
 
+  // Prevent duplicate submissions
   const origBtnText = submitBtn.innerHTML;
-  submitBtn.innerHTML = 'Saving...';
+  submitBtn.innerHTML = '⏳ Saving to Supabase...';
   submitBtn.disabled = true;
 
   try {
-    let cloudSaved = false;
-    if (hasCloudNotesTable) {
-      if (isEditing) {
-        const { error } = await supabase
-          .from('admin_booking_notes')
-          .update(noteData)
-          .eq('id', noteId);
-        if (!error) cloudSaved = true;
-      } else {
-        const { error } = await supabase
-          .from('admin_booking_notes')
-          .insert([noteData]);
-        if (!error) cloudSaved = true;
+    let resultData = null;
+    let queryError = null;
+
+    if (isEditing) {
+      const { data, error } = await supabase
+        .from('booking_notes')
+        .update(payload)
+        .eq('id', noteId)
+        .select();
+      resultData = data;
+      queryError = error;
+    } else {
+      const { data, error } = await supabase
+        .from('booking_notes')
+        .insert([payload])
+        .select();
+      resultData = data;
+      queryError = error;
+    }
+
+    if (queryError) {
+      console.error('[Supabase Save Error]', queryError);
+      
+      let readableMsg = queryError.message || 'Database error while saving booking note.';
+      if (queryError.code === '42501') {
+        readableMsg = `Supabase Authorization Error (42501): ${queryError.message}. The table public.booking_notes has Row Level Security (RLS) enabled. Please ensure you are logged in with verified admin privileges and the admin RLS policy is applied in your Supabase SQL Editor.`;
       }
+      
+      showFormError(readableMsg);
+      // Do NOT show false success message
+      return;
     }
 
-    // Always maintain local mirror
+    // Success confirmed by Supabase!
+    const savedRecord = (Array.isArray(resultData) && resultData.length > 0) ? resultData[0] : null;
+    const finalId = (savedRecord && savedRecord.id) ? savedRecord.id : (noteId || (crypto.randomUUID ? crypto.randomUUID() : 'note_' + Date.now()));
+
+    // Update local state mirror
     if (isEditing) {
-      bookingNotesState = bookingNotesState.map(n => String(n.id) === String(noteId) ? { ...n, ...noteData, id: noteId } : n);
+      bookingNotesState = bookingNotesState.map(n => String(n.id) === String(noteId) ? { ...n, ...payload, ...(savedRecord || {}), id: noteId } : n);
     } else {
       bookingNotesState.unshift({
-        id: noteId,
-        ...noteData,
-        created_at: new Date().toISOString()
+        id: finalId,
+        ...payload,
+        ...(savedRecord || {}),
+        created_at: (savedRecord && savedRecord.created_at) ? savedRecord.created_at : new Date().toISOString()
       });
     }
-    localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(bookingNotesState));
+    try {
+      localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(bookingNotesState));
+    } catch (e) {}
 
-    showToast(isEditing ? 'Booking note updated successfully.' : 'Booking note saved successfully.');
+    showToast(isEditing ? 'Booking note updated in Supabase.' : 'Booking note saved to Supabase successfully.');
     clearNotesForm();
-    if (hasCloudNotesTable) {
-      await loadBookingNotes();
-    } else {
-      filterBookingNotes();
-    }
+    await loadBookingNotes();
   } catch (err) {
-    console.error('Error saving note:', err);
-    if (isEditing) {
-      bookingNotesState = bookingNotesState.map(n => String(n.id) === String(noteId) ? { ...n, ...noteData, id: noteId } : n);
-    } else {
-      bookingNotesState.unshift({
-        id: noteId,
-        ...noteData,
-        created_at: new Date().toISOString()
-      });
-    }
-    localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(bookingNotesState));
-    showToast('Saved to local storage (Supabase cloud sync pending).');
-    clearNotesForm();
-    filterBookingNotes();
+    console.error('[Exception Saving Note]', err);
+    showFormError(`Network or client error: ${err.message || 'Could not connect to Supabase.'}`);
   } finally {
     submitBtn.innerHTML = origBtnText;
     submitBtn.disabled = false;
@@ -820,6 +835,8 @@ function clearNotesForm() {
   if (idInput) idInput.value = '';
   const guestsInput = document.getElementById('note-guests');
   if (guestsInput) guestsInput.value = '1';
+  const statusInput = document.getElementById('note-status');
+  if (statusInput) statusInput.value = 'Confirmed';
   const title = document.getElementById('form-section-title');
   if (title) title.textContent = 'New Booking Note';
   const submitBtn = document.getElementById('note-submit-btn');
@@ -828,6 +845,10 @@ function clearNotesForm() {
   if (cancelBtn) cancelBtn.style.display = 'none';
   const badgeWrap = document.getElementById('edit-badge-wrap');
   if (badgeWrap) badgeWrap.style.display = 'none';
+  const errorEl = document.getElementById('note-form-error');
+  if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+  const successEl = document.getElementById('note-form-success');
+  if (successEl) { successEl.style.display = 'none'; successEl.textContent = ''; }
   setDefaultDates();
 }
 
@@ -841,16 +862,21 @@ function editBookingNote(id) {
   document.getElementById('note-room').value = note.room_name || '';
   document.getElementById('note-checkin').value = note.check_in || '';
   document.getElementById('note-checkout').value = note.check_out || '';
-  document.getElementById('note-guests').value = note.guests || 1;
-  document.getElementById('note-advance').value = note.advance_amount ? note.advance_amount : '';
-  document.getElementById('note-total').value = note.total_amount ? note.total_amount : '';
-  document.getElementById('note-status').value = note.status || 'Confirmed';
-  document.getElementById('note-notes').value = note.notes || '';
+  document.getElementById('note-guests').value = note.number_of_guests || note.guests || 1;
+  document.getElementById('note-advance').value = (note.advance_amount !== null && note.advance_amount !== undefined) ? note.advance_amount : '';
+  document.getElementById('note-total').value = (note.total_booking_amount !== null && note.total_booking_amount !== undefined) 
+    ? note.total_booking_amount 
+    : ((note.total_amount !== null && note.total_amount !== undefined) ? note.total_amount : '');
+  document.getElementById('note-status').value = note.booking_status || note.status || 'Confirmed';
+  document.getElementById('note-notes').value = note.additional_notes || note.notes || '';
 
   document.getElementById('form-section-title').textContent = `Edit Booking: ${note.customer_name}`;
   document.getElementById('note-submit-btn').innerHTML = '💾 Update Booking';
   document.getElementById('note-cancel-edit-btn').style.display = 'inline-flex';
   document.getElementById('edit-badge-wrap').style.display = 'block';
+
+  const errorEl = document.getElementById('note-form-error');
+  if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
 
   handleCheckinDateChange();
 
@@ -869,19 +895,27 @@ async function deleteBookingNote(id) {
   }
 
   try {
-    if (hasCloudNotesTable) {
-      await supabase
-        .from('admin_booking_notes')
-        .delete()
-        .eq('id', id);
+    const { error } = await supabase
+      .from('booking_notes')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('[Supabase Delete Error]', error);
+      alert(`Could not delete record from Supabase: ${error.message}`);
+      return;
     }
   } catch (err) {
-    console.warn('Supabase delete error:', err);
+    console.error('[deleteBookingNote Exception]', err);
+    alert(`Could not delete record: ${err.message}`);
+    return;
   }
 
   bookingNotesState = bookingNotesState.filter(n => String(n.id) !== String(id));
-  localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(bookingNotesState));
-  showToast('Booking record deleted.');
+  try {
+    localStorage.setItem(STORAGE_KEY_ADMIN_NOTES, JSON.stringify(bookingNotesState));
+  } catch (e) {}
+  showToast('Booking record deleted from Supabase.');
   filterBookingNotes();
 }
 
@@ -892,10 +926,15 @@ function viewBookingNote(id) {
   const content = document.getElementById('admin-note-view-content');
   if (!content) return;
 
-  const statusClass = (note.status || 'confirmed').toLowerCase().replace(/\s+/g, '-');
-  const advance = note.advance_amount ? Number(note.advance_amount) : 0;
-  const total = note.total_amount ? Number(note.total_amount) : 0;
+  const statusVal = note.booking_status || note.status || 'Confirmed';
+  const statusClass = statusVal.toLowerCase().replace(/\s+/g, '-');
+  const advance = (note.advance_amount !== null && note.advance_amount !== undefined) ? Number(note.advance_amount) : 0;
+  const total = (note.total_booking_amount !== null && note.total_booking_amount !== undefined) 
+    ? Number(note.total_booking_amount) 
+    : ((note.total_amount !== null && note.total_amount !== undefined) ? Number(note.total_amount) : 0);
   const balance = total > advance ? total - advance : 0;
+  const guests = note.number_of_guests || note.guests || 1;
+  const notesText = note.additional_notes || note.notes || '';
 
   let nightsText = '';
   if (note.check_in && note.check_out) {
@@ -914,7 +953,7 @@ function viewBookingNote(id) {
         </div>
       </div>
       <span class="status-pill ${statusClass}">
-        ● ${escapeHtml(note.status || 'Confirmed')}
+        ● ${escapeHtml(statusVal)}
       </span>
     </div>
 
@@ -925,7 +964,7 @@ function viewBookingNote(id) {
       </div>
       <div class="admin-detail-item">
         <span class="admin-detail-label">Total Guests</span>
-        <span class="admin-detail-value">👥 ${note.guests || 1} Person(s)</span>
+        <span class="admin-detail-value">👥 ${guests} Person(s)</span>
       </div>
       <div class="admin-detail-item">
         <span class="admin-detail-label">Check-in Date</span>
@@ -952,11 +991,11 @@ function viewBookingNote(id) {
       </div>` : ''}
     </div>
 
-    ${note.notes ? `
+    ${notesText ? `
     <div style="margin-top:1.25rem;">
       <span class="admin-detail-label">Special Requests / Notes:</span>
       <div style="margin-top:6px; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px 14px; font-size:0.9rem; color:#FAF7F2; line-height:1.5; white-space:pre-wrap;">
-        ${escapeHtml(note.notes)}
+        ${escapeHtml(notesText)}
       </div>
     </div>` : ''}
 
@@ -995,7 +1034,9 @@ function filterBookingNotes() {
     const noteRoom = (note.room_name || '').toLowerCase();
     const selRoom = selectedRoom.toLowerCase();
     const matchesRoom = selectedRoom === 'all' || noteRoom.includes(selRoom) || selRoom.includes(noteRoom);
-    const matchesStatus = selectedStatus === 'all' || (note.status || '').toLowerCase() === selectedStatus.toLowerCase();
+    
+    const noteStatus = (note.booking_status || note.status || '').toLowerCase();
+    const matchesStatus = selectedStatus === 'all' || noteStatus === selectedStatus.toLowerCase();
 
     return matchesSearch && matchesRoom && matchesStatus;
   });
@@ -1059,9 +1100,13 @@ function renderBookingNotes(notes) {
   `;
 
   notes.forEach(note => {
-    const statusClass = (note.status || 'confirmed').toLowerCase().replace(/\s+/g, '-');
-    const advance = note.advance_amount ? Number(note.advance_amount) : 0;
-    const total = note.total_amount ? Number(note.total_amount) : 0;
+    const statusVal = note.booking_status || note.status || 'Confirmed';
+    const statusClass = statusVal.toLowerCase().replace(/\s+/g, '-');
+    const advance = (note.advance_amount !== null && note.advance_amount !== undefined) ? Number(note.advance_amount) : 0;
+    const total = (note.total_booking_amount !== null && note.total_booking_amount !== undefined) 
+      ? Number(note.total_booking_amount) 
+      : ((note.total_amount !== null && note.total_amount !== undefined) ? Number(note.total_amount) : 0);
+    const guests = note.number_of_guests || note.guests || 1;
 
     tableHtml += `
       <tr>
@@ -1079,11 +1124,11 @@ function renderBookingNotes(notes) {
           <div style="font-size:0.75rem; color:var(--admin-text-muted);">to ${escapeHtml(note.check_out)}</div>
         </td>
         <td>
-          <span style="font-size:0.85rem; color:#FFFFFF;">👥 ${note.guests || 1}</span>
+          <span style="font-size:0.85rem; color:#FFFFFF;">👥 ${guests}</span>
         </td>
         <td>
           <span class="status-pill ${statusClass}">
-            ● ${escapeHtml(note.status || 'Confirmed')}
+            ● ${escapeHtml(statusVal)}
           </span>
         </td>
         <td>
@@ -1116,9 +1161,14 @@ function renderBookingNotes(notes) {
   // 2. Mobile Responsive Cards
   let cardsHtml = `<div class="admin-notes-cards-wrap">`;
   notes.forEach(note => {
-    const statusClass = (note.status || 'confirmed').toLowerCase().replace(/\s+/g, '-');
-    const advance = note.advance_amount ? Number(note.advance_amount) : 0;
-    const total = note.total_amount ? Number(note.total_amount) : 0;
+    const statusVal = note.booking_status || note.status || 'Confirmed';
+    const statusClass = statusVal.toLowerCase().replace(/\s+/g, '-');
+    const advance = (note.advance_amount !== null && note.advance_amount !== undefined) ? Number(note.advance_amount) : 0;
+    const total = (note.total_booking_amount !== null && note.total_booking_amount !== undefined) 
+      ? Number(note.total_booking_amount) 
+      : ((note.total_amount !== null && note.total_amount !== undefined) ? Number(note.total_amount) : 0);
+    const guests = note.number_of_guests || note.guests || 1;
+    const notesText = note.additional_notes || note.notes || '';
 
     cardsHtml += `
       <div class="admin-note-card">
@@ -1130,7 +1180,7 @@ function renderBookingNotes(notes) {
             </div>
           </div>
           <span class="status-pill ${statusClass}">
-            ● ${escapeHtml(note.status || 'Confirmed')}
+            ● ${escapeHtml(statusVal)}
           </span>
         </div>
 
@@ -1141,7 +1191,7 @@ function renderBookingNotes(notes) {
           </div>
           <div>
             <div class="admin-note-card-label">Guests</div>
-            <div class="admin-note-card-value">👥 ${note.guests || 1}</div>
+            <div class="admin-note-card-value">👥 ${guests}</div>
           </div>
           <div>
             <div class="admin-note-card-label">Check-in</div>
@@ -1158,9 +1208,9 @@ function renderBookingNotes(notes) {
           </div>` : ''}
         </div>
 
-        ${note.notes ? `
+        ${notesText ? `
           <div style="font-size:0.8rem; color:var(--admin-text-muted); background:rgba(0,0,0,0.25); padding:6px 10px; border-radius:6px;">
-            📝 ${escapeHtml(note.notes)}
+            📝 ${escapeHtml(notesText)}
           </div>
         ` : ''}
 

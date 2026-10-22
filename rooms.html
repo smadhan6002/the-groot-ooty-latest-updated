@@ -3,37 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rooms &amp; Stays in Ooty | A-Frame, Glass House &amp; More | The Groot Ooty</title>
-  <meta name="description" content="Choose your stay at The Groot Ooty — A-Frame Cabin, Glass House with panoramic forest views, Luxurious Suite, and Standard Rooms. All rooms in Pudumund, Ooty include Wi-Fi, hot water, and campfire access." />
-  <link rel="canonical" href="https://the-grooty.vercel.app/rooms" />
+  <title>Rooms &amp; Cabins in Ooty | A-Frame &amp; Glass House | The Groot Ooty</title>
+  <meta name="description" content="Explore boutique rooms at The Groot Ooty in Pudumund — Signature A-Frame Cabin, Glass House, Luxurious Suite, and cozy Standard Rooms. Book your stay direct." />
+  <link rel="canonical" href="https://www.thegrootooty.online/rooms" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="The Groot Ooty" />
-  <meta property="og:title" content="Rooms &amp; Stays in Ooty | The Groot Ooty" />
-  <meta property="og:description" content="A-Frame Cabin, Glass House, Luxurious Suite, and Standard Rooms at The Groot Ooty, Pudumund. All rooms include Wi-Fi, hot water, and campfire access." />
-  <meta property="og:url" content="https://the-grooty.vercel.app/rooms" />
+  <meta property="og:title" content="Rooms &amp; Cabins in Ooty | The Groot Ooty" />
+  <meta property="og:description" content="Explore boutique rooms at The Groot Ooty in Pudumund — Signature A-Frame Cabin, Glass House, Luxurious Suite, and cozy Standard Rooms." />
+  <meta property="og:url" content="https://www.thegrootooty.online/rooms" />
   <meta property="og:image" content="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" />
   <meta property="og:image:alt" content="The Groot Ooty rooms and cabins in Pudumund, Ooty" />
   <meta property="og:locale" content="en_IN" />
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Rooms &amp; Stays in Ooty | The Groot Ooty" />
+  <meta name="twitter:title" content="Rooms &amp; Cabins in Ooty | The Groot Ooty" />
   <meta name="twitter:description" content="A-Frame Cabin, Glass House, Luxurious Suite &amp; Standard Rooms at The Groot Ooty in Pudumund, Ooty." />
   <meta name="twitter:image" content="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" />
 
   <!-- Favicon -->
   <link rel="icon" href="https://jritiortuorrpcfkoupf.supabase.co/storage/v1/object/public/gallery/IMG-20260821-WA0039_4k.webp" type="image/webp" />
 
-  <!-- JSON-LD Breadcrumb -->
+  <!-- JSON-LD Structured Data: Breadcrumbs & ItemList -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://the-grooty.vercel.app/" },
-      { "@type": "ListItem", "position": 2, "name": "Rooms & Stays", "item": "https://the-grooty.vercel.app/rooms" }
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.thegrootooty.online/" },
+          { "@type": "ListItem", "position": 2, "name": "Rooms & Cabins", "item": "https://www.thegrootooty.online/rooms" }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "name": "Accommodations at The Groot Ooty",
+        "description": "Available rooms, cabins, and suites at The Groot Ooty, Pudumund, Tamil Nadu.",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@type": "HotelRoom",
+              "name": "A-Frame Cabin",
+              "description": "Signature architectural timber cabin with exposed beams, forest views, and mountain ambiance.",
+              "price": "4500",
+              "priceCurrency": "INR"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+              "@type": "HotelRoom",
+              "name": "Glass House",
+              "description": "Immersive glass cabin surrounded by living forest canopy with panoramic forest views.",
+              "price": "4000",
+              "priceCurrency": "INR"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "item": {
+              "@type": "HotelRoom",
+              "name": "Luxurious Suite",
+              "description": "Elevated teak furnishings, plush king bed, private lounge, and hill panoramas.",
+              "price": "3000",
+              "priceCurrency": "INR"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "item": {
+              "@type": "HotelRoom",
+              "name": "Standard Room",
+              "description": "Cozy, well-appointed room with garden views, hot water, and Wi-Fi.",
+              "price": "1500",
+              "priceCurrency": "INR"
+            }
+          }
+        ]
+      }
     ]
   }
   </script>
@@ -142,7 +197,7 @@
       <div class="section-header" data-reveal="fade-up">
         <span class="section-overline">Accommodations</span>
         <h1 class="display-lg" style="color:var(--color-obsidian); margin-bottom: 0.75rem;">
-          Our Rooms & Cabins
+          Rooms &amp; Cabins at The Groot Ooty
         </h1>
         <p class="section-subtitle">
           From our signature timber A-frame to the panoramic Glass house and spacious Luxurious suit, explore boutique stays nestled in the Nilgiri hills.
@@ -195,7 +250,7 @@
           <nav class="footer-nav">
             <a href="booking.html" class="footer-link">Check Availability</a>
             <a href="contact.html" class="footer-link">Contact Us</a>
-            <a href="admin.html" class="footer-link" rel="nofollow" style="opacity:0.75;">Admin Portal</a>
+            <a href="/admin" class="footer-link" rel="nofollow" style="opacity:0.75;">Admin Portal</a>
           </nav>
         </div>
         <div>
@@ -212,7 +267,7 @@
         <div class="footer-bottom-links">
           <a href="contact.html" class="footer-bottom-link">Contact</a>
           <a href="booking.html" class="footer-bottom-link">Book Direct</a>
-          <a href="admin.html" class="footer-bottom-link" rel="nofollow" style="opacity:0.7;">Admin</a>
+          <a href="/admin" class="footer-bottom-link" rel="nofollow" style="opacity:0.7;">Admin</a>
         </div>
       </div>
     </div>

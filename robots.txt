@@ -20,4 +20,4 @@ Disallow: /admin/
 Disallow: /admin
 
 # Sitemap location
-Sitemap: https://the-grooty.vercel.app/sitemap.xml
+Sitemap: https://www.thegrootooty.online/sitemap.xml
