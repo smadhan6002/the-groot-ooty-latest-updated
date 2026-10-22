@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -223,11 +223,12 @@
   <script src="js/whatsapp.js"></script>
   <script src="js/main.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    function initRoomsCatalog() {
       const container = document.getElementById('rooms-catalog-grid');
-      if (!container || !window.GrootStore) return;
+      if (!container) return;
 
       function renderRooms() {
+        if (!window.GrootStore) return;
         const rooms = window.GrootStore.getRooms();
         container.innerHTML = '';
 
@@ -280,9 +281,22 @@
         if (typeof initScrollReveal === 'function') initScrollReveal();
       }
 
-      renderRooms();
-      window.GrootStore.subscribe(renderRooms);
-    });
+      if (window.GrootStore) {
+        renderRooms();
+        window.GrootStore.subscribe(renderRooms);
+      } else {
+        window.addEventListener('groot-store-ready', () => {
+          renderRooms();
+          if (window.GrootStore) window.GrootStore.subscribe(renderRooms);
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initRoomsCatalog);
+    } else {
+      initRoomsCatalog();
+    }
   </script>
 </body>
 </html>

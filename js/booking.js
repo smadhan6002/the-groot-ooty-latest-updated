@@ -4,10 +4,6 @@
    ========================================================= */
 import { supabase } from './supabase.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  initBookingWizard();
-});
-
 /* ---------------------------------------------------------
    STATE
    --------------------------------------------------------- */
@@ -45,6 +41,9 @@ function initBookingWizard() {
     bookingState.room = preRoom;
   }
 
+  // Pre-fill default dates (today & tomorrow) if none selected
+  setDefaultBookingDates();
+
   // Init calendar
   initCalendar();
 
@@ -75,6 +74,31 @@ function initBookingWizard() {
       updateSidebar();
       if (bookingState.step === 5) renderReview();
     });
+  } else {
+    window.addEventListener('groot-store-ready', () => {
+      renderRoomOptions();
+      updateSidebar();
+      if (bookingState.step === 5) renderReview();
+      if (window.GrootStore) {
+        window.GrootStore.subscribe(() => {
+          renderRoomOptions();
+          updateSidebar();
+          if (bookingState.step === 5) renderReview();
+        });
+      }
+    });
+  }
+}
+
+function setDefaultBookingDates() {
+  if (!bookingState.checkin) {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const pad = (n) => String(n).padStart(2, '0');
+    bookingState.checkin = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+    bookingState.checkout = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
   }
 }
 
@@ -609,31 +633,26 @@ async function submitBooking(e) {
       meals: bookingState.meals || null,
       special_requests: bookingState.specialRequest || 'None',
       status: 'pending',
-      room_id: null // UUID requirement handled by database NULL relaxation or policy
+      room_id: null
     };
 
-    const { data, error } = await supabase.from('bookings').insert([payload]);
-
-    if (error) {
-      console.error('BOOKING INSERT ERROR:', JSON.stringify(error, null, 2));
-      alert('Failed to submit booking: ' + (error.message || JSON.stringify(error)) + '\nYour details are kept on the form.');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Complete Booking via WhatsApp';
+    if (supabase && typeof supabase.from === 'function') {
+      const { data, error } = await supabase.from('bookings').insert([payload]);
+      if (error) {
+        console.warn('Supabase booking insert warning:', error);
       }
-      return; // Stop execution on error
     }
+
+    try {
+      const localBookings = JSON.parse(localStorage.getItem('groot_guest_bookings_v1') || '[]');
+      localBookings.unshift(payload);
+      localStorage.setItem('groot_guest_bookings_v1', JSON.stringify(localBookings));
+    } catch (e) {}
   } catch (err) {
-    console.error('BOOKING INSERT ERROR:', err);
-    alert('An unexpected error occurred while saving your booking. Please check your connection and try again.');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = 'Complete Booking via WhatsApp';
-    }
-    return; // Stop execution on error
+    console.warn('Booking sync warning (proceeding to WhatsApp):', err);
   }
 
-  // Restore button state just in case
+  // Restore button state
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.innerHTML = 'Complete Booking via WhatsApp';
@@ -715,4 +734,18 @@ function updateSidebar() {
 
   set('sb-room', roomDisplay);
   set('sb-name', bookingState.name || null);
+}
+
+/* ---------------------------------------------------------
+   BOOT
+   --------------------------------------------------------- */
+
+function bootBookingWizard() {
+  initBookingWizard();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootBookingWizard);
+} else {
+  bootBookingWizard();
 }

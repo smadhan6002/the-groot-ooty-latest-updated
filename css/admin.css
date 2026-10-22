@@ -548,6 +548,166 @@ body.admin-body {
   cursor: pointer;
 }
 
+/* =========================================================
+   BOOKING NOTES SECTION STYLES
+   ========================================================= */
+
+.admin-sync-banner {
+  background: rgba(159, 207, 73, 0.08);
+  border: 1px solid rgba(159, 207, 73, 0.25);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-filter-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.75rem 1rem;
+}
+
+/* Status pills */
+.status-pill.confirmed {
+  background: rgba(79, 195, 247, 0.15);
+  color: #4FC3F7;
+  border: 1px solid rgba(79, 195, 247, 0.35);
+}
+
+.status-pill.checked-in {
+  background: rgba(37, 211, 102, 0.18);
+  color: #25D366;
+  border: 1px solid rgba(37, 211, 102, 0.35);
+}
+
+.status-pill.checked-out {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(250, 247, 242, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-pill.cancelled {
+  background: rgba(255, 82, 82, 0.15);
+  color: #FF5252;
+  border: 1px solid rgba(255, 82, 82, 0.35);
+}
+
+/* Notes Table */
+.admin-notes-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-notes-table th {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--admin-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.admin-notes-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.admin-notes-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Responsive Cards for mobile note listings */
+.admin-notes-cards-wrap {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-note-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-note-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.admin-note-card-title {
+  font-weight: 700;
+  color: #FFFFFF;
+  font-size: 1.05rem;
+}
+
+.admin-note-card-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.admin-note-card-label {
+  color: var(--admin-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.admin-note-card-value {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Details Modal view grid */
+.admin-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md, 8px);
+  padding: 1.25rem;
+}
+
+.admin-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-detail-label {
+  font-size: 0.75rem;
+  color: var(--admin-accent-glow);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.admin-detail-value {
+  font-size: 0.95rem;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
 /* Responsive Overrides */
 @media (max-width: 900px) {
   .admin-nav {
@@ -567,4 +727,14 @@ body.admin-body {
   .admin-section {
     padding: 1.25rem;
   }
+  .admin-notes-table-wrap {
+    display: none;
+  }
+  .admin-notes-cards-wrap {
+    display: flex;
+  }
+  .admin-details-grid {
+    grid-template-columns: 1fr;
+  }
 }
+

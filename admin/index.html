@@ -10,9 +10,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" />
 
-  <link rel="stylesheet" href="css/variables.css?v=3.2" />
-  <link rel="stylesheet" href="css/admin.css?v=3.2" />
+  <link rel="stylesheet" href="css/variables.css?v=3.3" />
+  <link rel="stylesheet" href="css/admin.css?v=3.3" />
 </head>
 <body class="admin-body">
 
@@ -29,14 +30,14 @@
 
       <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
         <div class="admin-form-group" style="text-align:left;">
-          <label class="admin-label" for="admin-email">Email</label>
+          <label class="admin-label" for="admin-email">Username or Email</label>
           <input
-            type="email"
+            type="text"
             id="admin-email"
             class="admin-input"
-            placeholder="Enter your email"
+            placeholder="admin or your email"
             required
-            autocomplete="email"
+            autocomplete="username email"
           />
         </div>
         <div class="admin-form-group" style="text-align:left;">
@@ -79,10 +80,11 @@
 
       <!-- Navigation Tabs -->
       <nav class="admin-tabs" role="tablist">
-        <button class="admin-tab-btn active" data-tab="dashboard" role="tab">Dashboard</button>
-        <button class="admin-tab-btn" data-tab="rooms" role="tab">Rooms & Pricing</button>
-        <button class="admin-tab-btn" data-tab="gallery" role="tab">Gallery (Read-Only)</button>
-        <button class="admin-tab-btn" data-tab="settings" role="tab">Property Info (Read-Only)</button>
+        <button class="admin-tab-btn active" data-tab="dashboard" role="tab" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="admin-tab-btn" data-tab="rooms" role="tab" onclick="switchTab('rooms')">Rooms & Pricing</button>
+        <button class="admin-tab-btn" data-tab="notes" role="tab" onclick="switchTab('notes')">Booking Notes</button>
+        <button class="admin-tab-btn" data-tab="gallery" role="tab" onclick="switchTab('gallery')">Gallery (Read-Only)</button>
+        <button class="admin-tab-btn" data-tab="settings" role="tab" onclick="switchTab('settings')">Property Info (Read-Only)</button>
       </nav>
 
       <!-- Actions -->
@@ -169,7 +171,252 @@
       </div>
 
       <!-- =====================================================
-           TAB 3: GALLERY & PHOTO (READ-ONLY)
+           TAB 3: BOOKING NOTES (MANUAL RECORD-KEEPING)
+           ===================================================== -->
+      <div id="tab-notes" class="admin-tab-content">
+        
+        <!-- Cloud Sync Status Banner -->
+        <div id="notes-sync-banner" class="admin-sync-banner" style="display:none;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.2rem;">☁️</span>
+            <div>
+              <strong style="color:var(--admin-accent-glow);">Supabase Cloud Sync Ready</strong>
+              <div style="font-size:0.8rem; color:var(--admin-text-muted);">
+                Notes are backed up locally. To sync across all devices, run the provided SQL in your Supabase SQL Editor.
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="openSqlModal()" class="admin-btn admin-btn-outline" style="font-size:0.75rem; padding:5px 12px;">
+            View SQL Script
+          </button>
+        </div>
+
+        <!-- Section 1: Record / Edit Booking Note Form -->
+        <div class="admin-section" id="booking-notes-form-section">
+          <div class="admin-section-header">
+            <div>
+              <h2 class="admin-section-title" id="form-section-title">New Booking Note</h2>
+              <p style="font-size:0.85rem; color:var(--admin-text-muted); margin:4px 0 0;">
+                Manually record guest reservations for internal scheduling, payment tracking, and guest management.
+              </p>
+            </div>
+            <div id="edit-badge-wrap" style="display:none;">
+              <span class="status-pill" style="background:rgba(255,183,77,0.18); color:#FFB74D; border:1px solid rgba(255,183,77,0.3);">
+                ✏️ Editing Mode
+              </span>
+            </div>
+          </div>
+
+          <form id="admin-booking-note-form" onsubmit="handleSaveBookingNote(event)">
+            <input type="hidden" id="note-id" />
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1.25rem;">
+              
+              <!-- Customer Name -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-customer-name">Customer Name *</label>
+                <input
+                  type="text"
+                  id="note-customer-name"
+                  class="admin-input"
+                  placeholder="e.g. Anand Kumar"
+                  required
+                />
+              </div>
+
+              <!-- Contact Number -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-contact">Contact Number *</label>
+                <input
+                  type="tel"
+                  id="note-contact"
+                  class="admin-input"
+                  placeholder="e.g. 9876543210"
+                  required
+                />
+              </div>
+
+              <!-- Room Name -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-room">Room Name *</label>
+                <select id="note-room" class="admin-select" required>
+                  <option value="" disabled selected>Select Room</option>
+                  <option value="Standard">Standard</option>
+                  <option value="A-frame">A-frame</option>
+                  <option value="Luxury Suite">Luxury Suite</option>
+                  <option value="Glass House">Glass House</option>
+                </select>
+              </div>
+
+              <!-- Check-in Date -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-checkin">Check-in Date *</label>
+                <input
+                  type="date"
+                  id="note-checkin"
+                  class="admin-input"
+                  required
+                  onchange="handleCheckinDateChange()"
+                />
+              </div>
+
+              <!-- Check-out Date -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-checkout">Check-out Date *</label>
+                <input
+                  type="date"
+                  id="note-checkout"
+                  class="admin-input"
+                  required
+                />
+              </div>
+
+              <!-- Number of Guests -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-guests">Number of Guests *</label>
+                <input
+                  type="number"
+                  id="note-guests"
+                  class="admin-input"
+                  min="1"
+                  max="25"
+                  value="1"
+                  required
+                />
+              </div>
+
+              <!-- Advance Amount (₹) -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-advance">Advance Amount (₹ INR)</label>
+                <input
+                  type="number"
+                  id="note-advance"
+                  class="admin-input"
+                  placeholder="e.g. 2000"
+                  min="0"
+                  step="100"
+                />
+              </div>
+
+              <!-- Total Booking Amount (₹) -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-total">Total Booking Amount (₹ INR)</label>
+                <input
+                  type="number"
+                  id="note-total"
+                  class="admin-input"
+                  placeholder="e.g. 5000"
+                  min="0"
+                  step="100"
+                />
+              </div>
+
+              <!-- Booking Status -->
+              <div class="admin-form-group">
+                <label class="admin-label" for="note-status">Booking Status *</label>
+                <select id="note-status" class="admin-select" required>
+                  <option value="Confirmed" selected>Confirmed</option>
+                  <option value="Checked In">Checked In</option>
+                  <option value="Checked Out">Checked Out</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Additional Notes -->
+            <div class="admin-form-group" style="margin-top:0.5rem;">
+              <label class="admin-label" for="note-notes">Additional Notes</label>
+              <textarea
+                id="note-notes"
+                class="admin-textarea"
+                rows="3"
+                placeholder="e.g. Campfire requested, early check-in at 10 AM, extra mattress needed, paid via GPay..."
+              ></textarea>
+            </div>
+
+            <!-- Form Action Buttons -->
+            <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; flex-wrap:wrap;">
+              <button
+                type="button"
+                id="note-cancel-edit-btn"
+                onclick="clearNotesForm()"
+                class="admin-btn admin-btn-outline"
+                style="display:none;"
+              >
+                Cancel Edit
+              </button>
+              <button
+                type="button"
+                onclick="clearNotesForm()"
+                class="admin-btn admin-btn-outline"
+              >
+                Clear Form
+              </button>
+              <button
+                type="submit"
+                id="note-submit-btn"
+                class="admin-btn admin-btn-primary"
+              >
+                💾 Save Booking
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Section 2: Saved Booking Notes List -->
+        <div class="admin-section">
+          <div class="admin-section-header">
+            <div>
+              <h2 class="admin-section-title">Saved Booking Records</h2>
+              <p style="font-size:0.85rem; color:var(--admin-text-muted); margin:4px 0 0;">
+                All manually recorded booking notes. Search or filter to inspect reservations.
+              </p>
+            </div>
+            <div id="notes-count-badge" class="admin-badge">
+              0 Records
+            </div>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="admin-filter-bar">
+            <div style="flex:1; min-width:240px;">
+              <input
+                type="text"
+                id="note-search-input"
+                class="admin-input"
+                placeholder="🔍 Search by customer name or contact number..."
+                oninput="filterBookingNotes()"
+              />
+            </div>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+              <select id="note-filter-room" class="admin-select" onchange="filterBookingNotes()" style="min-width:150px;">
+                <option value="all">All Rooms</option>
+                <option value="Standard">Standard</option>
+                <option value="A-frame">A-frame</option>
+                <option value="Luxury Suite">Luxury Suite</option>
+                <option value="Glass House">Glass House</option>
+              </select>
+              <select id="note-filter-status" class="admin-select" onchange="filterBookingNotes()" style="min-width:150px;">
+                <option value="all">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Checked In">Checked In</option>
+                <option value="Checked Out">Checked Out</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Records Table & Cards Container -->
+          <div id="admin-notes-container" style="margin-top:1.5rem;">
+            <!-- Rendered dynamically by js/admin.js -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =====================================================
+           TAB 4: GALLERY & PHOTO (READ-ONLY)
            ===================================================== -->
       <div id="tab-gallery" class="admin-tab-content">
         <div class="admin-section">
@@ -280,6 +527,48 @@
     </div>
   </div>
 
+  <!-- =========================================================
+       4. VIEW BOOKING NOTE DETAILS MODAL
+       ========================================================= -->
+  <div id="admin-note-view-modal" class="admin-modal" role="dialog" aria-modal="true">
+    <div class="admin-modal-box" style="max-width:580px;">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title">Booking Note Details</h3>
+        <button onclick="closeNoteViewModal()" class="admin-modal-close">&times;</button>
+      </div>
+      <div id="admin-note-view-content">
+        <!-- Rendered dynamically -->
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem;">
+        <button type="button" onclick="closeNoteViewModal()" class="admin-btn admin-btn-outline">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       5. SUPABASE SQL MIGRATION MODAL
+       ========================================================= -->
+  <div id="admin-sql-modal" class="admin-modal" role="dialog" aria-modal="true">
+    <div class="admin-modal-box" style="max-width:680px;">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title">Supabase SQL Migration</h3>
+        <button onclick="closeSqlModal()" class="admin-modal-close">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:var(--admin-text-muted); margin-bottom:1rem;">
+        Run this SQL script in your <strong>Supabase Dashboard &rarr; SQL Editor</strong> to enable permanent cross-device cloud persistence for manual booking notes.
+      </p>
+      <div style="position:relative;">
+        <pre id="sql-code-block" style="background:#0C140D; border:1px solid var(--admin-card-border); border-radius:8px; padding:1rem; color:#FAF7F2; font-size:0.8rem; overflow-x:auto; max-height:280px;"></pre>
+        <button onclick="copySqlCode()" class="admin-btn admin-btn-primary" style="position:absolute; top:8px; right:8px; padding:4px 10px; font-size:0.75rem;">
+          📋 Copy SQL
+        </button>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem;">
+        <button type="button" onclick="closeSqlModal()" class="admin-btn admin-btn-outline">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="admin-toast" class="admin-toast">
     <span id="toast-icon">✓</span>
@@ -287,6 +576,6 @@
   </div>
 
   <script type="module" src="js/store.js?v=5.0"></script>
-  <script type="module" src="js/admin.js?v=4.2"></script>
+  <script type="module" src="js/admin.js?v=5.0"></script>
 </body>
 </html>

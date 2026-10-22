@@ -73,7 +73,7 @@ function getRoomsData() {
       longDescription: 'The A-frame is the signature stay of The Groot Ooty. Its distinctive triangular architecture, soaring ceilings, exposed natural wooden beams, and forest-framed windows create an unforgettable Nilgiri mountain experience.',
       maxGuests: 4,
       image: 'assets/images/a_frame_client.jpeg',
-      interiorImage: 'assets/images/a_frame_client.jpeg',
+      interiorImage: 'assets/images/a_frame_2_client.jpeg',
       features: ['Signature Cabin', 'Forest Views', 'High Ceilings', 'Hot Water 24/7'],
       amenities: [
         { label: 'Signature A-frame Timber Architecture' },
@@ -113,7 +113,7 @@ function getRoomsData() {
       longDescription: 'The Glass house provides a one-of-a-kind immersion in Ooty nature. Floor-to-ceiling glass panels replace traditional walls, surrounding you with the living forest while keeping you cozy and warm inside.',
       maxGuests: 3,
       image: 'assets/images/glasshouse_client.jpeg',
-      interiorImage: 'assets/images/glasshouse_client.jpeg',
+      interiorImage: 'assets/images/glasshouse_3_client.jpeg',
       features: ['Glass Wall Panorama', 'Forest Immersion', 'Hot Water 24/7', 'Nature Views'],
       amenities: [
         { label: 'Panoramic Glass Wall Design' },

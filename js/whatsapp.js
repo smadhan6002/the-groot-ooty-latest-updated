@@ -130,6 +130,9 @@ function openWhatsApp(data) {
   return { enquiryId: data.enquiryId, message: msg, url };
 }
 
+window.openWhatsApp = openWhatsApp;
+window.buildWhatsAppMessage = buildWhatsAppMessage;
+
 /* ---------------------------------------------------------
    QUICK WHATSAPP OPENERS
    --------------------------------------------------------- */

@@ -56,7 +56,18 @@ function getGalleryDataset() {
     { src: 'assets/images/1000032841_professional_4k.webp', alt: 'Evening Campfire Under Starlit Sky', category: 'campfire', assignedRoom: 'property' },
     { src: 'assets/images/IMG-20260821-WA0036_4k.webp', alt: 'Outdoor Garden Gathering & Seating', category: 'campfire', assignedRoom: 'property' },
     { src: 'assets/images/IMG-20260821-WA0041_4k.webp', alt: 'Fresh Authentic Home-Cooked Meals', category: 'food', assignedRoom: 'property' },
-    { src: 'assets/images/1000032840_professional_4k.webp', alt: 'Tea Plantation & Nature Trails', category: 'nature', assignedRoom: 'property' }
+    { src: 'assets/images/1000032840_professional_4k.webp', alt: 'Tea Plantation & Nature Trails', category: 'nature', assignedRoom: 'property' },
+    { src: 'assets/images/a_frame_2_client.jpeg', alt: 'A-frame Cabin Exterior & Garden Lawn', category: 'rooms', assignedRoom: 'aframe' },
+    { src: 'assets/images/glasshouse_2_client.jpeg', alt: 'Glass house Exterior Deck & Forest Canopy', category: 'rooms', assignedRoom: 'glasshouse' },
+    { src: 'assets/images/glasshouse_3_client.jpeg', alt: 'Glass house Red Canopy Bedroom Interior', category: 'rooms', assignedRoom: 'glasshouse' },
+    { src: 'assets/images/luxury_4_client.jpeg', alt: 'Luxurious suit Bedroom & Mountain Window View', category: 'rooms', assignedRoom: 'suite' },
+    { src: 'assets/images/luxury_5_client.jpeg', alt: 'Luxurious suit Plush Bed & Sconce Lighting', category: 'rooms', assignedRoom: 'suite' },
+    { src: 'assets/images/luxury_6_client.jpeg', alt: 'Luxurious suit Panoramic Bedroom View', category: 'rooms', assignedRoom: 'suite' },
+    { src: 'assets/images/luxury_7_client.jpeg', alt: 'Luxurious suit Symmetrical Master Bed View', category: 'rooms', assignedRoom: 'suite' },
+    { src: 'assets/images/garden_area_1_client.jpeg', alt: 'Nilgiri Morning Mist & Outdoor Picnic Seating', category: 'property', assignedRoom: 'property' },
+    { src: 'assets/images/common_area_2_client.jpeg', alt: 'Spacious Dining Hall & Family Gathering Area', category: 'property', assignedRoom: 'property' },
+    { src: 'assets/images/common_area_3_client.jpeg', alt: 'Lodge Decor & Rustic Antler Pendant Lighting', category: 'property', assignedRoom: 'property' },
+    { src: 'assets/images/common_area_4_client.jpeg', alt: 'Upper Hall Lounge & Multipurpose Gathering Space', category: 'property', assignedRoom: 'property' }
   ];
 }
 

@@ -49,7 +49,7 @@ const DEFAULT_ROOM_METADATA = {
     longDescription: 'The A-frame is the signature stay of The Groot Ooty. Its distinctive triangular architecture, soaring ceilings, exposed natural wooden beams, and forest-framed windows create an unforgettable Nilgiri mountain experience.',
     maxGuests: 4,
     image: 'assets/images/a_frame_client.jpeg',
-    interiorImage: 'assets/images/a_frame_client.jpeg',
+    interiorImage: 'assets/images/a_frame_2_client.jpeg',
     features: ['Signature Cabin', 'Forest Views', 'High Ceilings', 'Hot Water 24/7'],
     amenities: [
       { label: 'Signature A-frame Timber Architecture' },
@@ -89,7 +89,7 @@ const DEFAULT_ROOM_METADATA = {
     longDescription: 'The Glass house provides a one-of-a-kind immersion in Ooty nature. Floor-to-ceiling glass panels replace traditional walls, surrounding you with the living forest while keeping you cozy and warm inside.',
     maxGuests: 3,
     image: 'assets/images/glasshouse_client.jpeg',
-    interiorImage: 'assets/images/glasshouse_client.jpeg',
+    interiorImage: 'assets/images/glasshouse_3_client.jpeg',
     features: ['Glass Wall Panorama', 'Forest Immersion', 'Hot Water 24/7', 'Nature Views'],
     amenities: [
       { label: 'Panoramic Glass Wall Design' },
@@ -134,7 +134,18 @@ const DEFAULT_GALLERY = [
   { id: 'gal-12', url: 'assets/images/1000032841_professional_4k.webp', title: 'Evening Campfire Under Starlit Sky', category: 'campfire', assignedRoom: 'property', enabled: true, order: 12 },
   { id: 'gal-13', url: 'assets/images/IMG-20260821-WA0036_4k.webp', title: 'Outdoor Garden Gathering & Seating', category: 'campfire', assignedRoom: 'property', enabled: true, order: 13 },
   { id: 'gal-14', url: 'assets/images/IMG-20260821-WA0041_4k.webp', title: 'Fresh Authentic Home-Cooked Meals', category: 'food', assignedRoom: 'property', enabled: true, order: 14 },
-  { id: 'gal-15', url: 'assets/images/1000032840_professional_4k.webp', title: 'Tea Plantation & Nature Trails', category: 'nature', assignedRoom: 'property', enabled: true, order: 15 }
+  { id: 'gal-15', url: 'assets/images/1000032840_professional_4k.webp', title: 'Tea Plantation & Nature Trails', category: 'nature', assignedRoom: 'property', enabled: true, order: 15 },
+  { id: 'gal-16', url: 'assets/images/a_frame_2_client.jpeg', title: 'A-frame Cabin Exterior & Garden Lawn', category: 'rooms', assignedRoom: 'aframe', enabled: true, order: 16 },
+  { id: 'gal-17', url: 'assets/images/glasshouse_2_client.jpeg', title: 'Glass house Exterior Deck & Forest Canopy', category: 'rooms', assignedRoom: 'glasshouse', enabled: true, order: 17 },
+  { id: 'gal-18', url: 'assets/images/glasshouse_3_client.jpeg', title: 'Glass house Red Canopy Bedroom Interior', category: 'rooms', assignedRoom: 'glasshouse', enabled: true, order: 18 },
+  { id: 'gal-19', url: 'assets/images/luxury_4_client.jpeg', title: 'Luxurious suit Bedroom & Mountain Window View', category: 'rooms', assignedRoom: 'suite', enabled: true, order: 19 },
+  { id: 'gal-20', url: 'assets/images/luxury_5_client.jpeg', title: 'Luxurious suit Plush Bed & Sconce Lighting', category: 'rooms', assignedRoom: 'suite', enabled: true, order: 20 },
+  { id: 'gal-21', url: 'assets/images/luxury_6_client.jpeg', title: 'Luxurious suit Panoramic Bedroom View', category: 'rooms', assignedRoom: 'suite', enabled: true, order: 21 },
+  { id: 'gal-22', url: 'assets/images/luxury_7_client.jpeg', title: 'Luxurious suit Symmetrical Master Bed View', category: 'rooms', assignedRoom: 'suite', enabled: true, order: 22 },
+  { id: 'gal-23', url: 'assets/images/garden_area_1_client.jpeg', title: 'Nilgiri Morning Mist & Outdoor Picnic Seating', category: 'property', assignedRoom: 'property', enabled: true, order: 23 },
+  { id: 'gal-24', url: 'assets/images/common_area_2_client.jpeg', title: 'Spacious Dining Hall & Family Gathering Area', category: 'property', assignedRoom: 'property', enabled: true, order: 24 },
+  { id: 'gal-25', url: 'assets/images/common_area_3_client.jpeg', title: 'Lodge Decor & Rustic Antler Pendant Lighting', category: 'property', assignedRoom: 'property', enabled: true, order: 25 },
+  { id: 'gal-26', url: 'assets/images/common_area_4_client.jpeg', title: 'Upper Hall Lounge & Multipurpose Gathering Space', category: 'property', assignedRoom: 'property', enabled: true, order: 26 }
 ];
 
 // DEFAULT SETTINGS
@@ -400,3 +411,6 @@ class GrootStore {
 
 // Instantiate singleton
 window.GrootStore = new GrootStore();
+if (typeof window !== 'undefined') {
+  window.dispatchEvent(new CustomEvent('groot-store-ready', { detail: window.GrootStore }));
+}
